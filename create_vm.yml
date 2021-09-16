@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+    vcenter_server: ""
+    vcenter_user: ""
+    vcenter_pass: ""
+    datacenter_name: "POC-Lab"
+    cluster_name: "poc-lab"
+    guest_domain: "ignw.local"
+    vm_name: "e8-stevehill-app2"
+    template: "e8-ubuntu20-template"
+
+  tasks:
+  - name: Clone a virtual machine from Linux template and customize
+    community.vmware.vmware_guest:
+      hostname: "{{ vcenter_server }}"
+      username: "{{ vcenter_user }}"
+      password: "{{ vcenter_pass }}"
+      validate_certs: False
+      datacenter: "{{ datacenter_name }}"
+      state: present
+      folder: /elev8
+      template: "{{ template }}"
+      name: "{{ vm_name }}"
+      cluster: "{{ cluster_name }}"
+      networks:
+        - name: ignw-poc|elev8|servers
+      wait_for_ip_address: True
+      customization:
+        domain: "{{ guest_domain }}"
+        dns_servers:
+        - 10.254.252.42
+        - 10.254.252.41
+        dns_suffix:
+        - ignw.local
+    delegate_to: localhost
+
